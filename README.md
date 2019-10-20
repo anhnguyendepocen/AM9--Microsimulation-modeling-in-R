@@ -11,7 +11,6 @@ https://github.com/krijkamp/AM9-Microsimulation-Modeling-in-R/wiki
 
 In collaboration with the DARTH workgroup
 - Website: http://darthworkgroup.com
-- GitHub: https://github.com/DARTH-git
 
 
 ## Recommended reading
