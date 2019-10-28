@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1571540072157.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "152039795",
+    "id" : "EBA061C8",
+    "lastKnownWriteTime" : 1571540121,
+    "last_content_update" : 1571540121838,
+    "path" : "C:/Users/ppehl/Google Drive/DARTH/Course Modularization/Microsimulation/Microsim Sick-Sicker/Microsim_Sick-Sicker_solution.R",
+    "project_path" : "Microsim_Sick-Sicker_solution.R",
+    "properties" : {
+        "cursorPosition" : "169,15",
+        "scrollLine" : "165"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

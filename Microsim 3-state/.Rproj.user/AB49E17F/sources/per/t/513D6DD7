@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1572092551524.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1298513225",
+    "id" : "513D6DD7",
+    "lastKnownWriteTime" : 1572092643,
+    "last_content_update" : 1572092643508,
+    "path" : "~/Google Drive/DARTH/Course Modularization/Microsimulation/Microsim 3-state/Microsim_3-state_time_PSA_solution.R",
+    "project_path" : "Microsim_3-state_time_PSA_solution.R",
+    "properties" : {
+        "cursorPosition" : "311,0",
+        "scrollLine" : "300"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

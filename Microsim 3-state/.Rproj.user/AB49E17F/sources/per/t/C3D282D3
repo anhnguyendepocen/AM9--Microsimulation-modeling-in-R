@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1572092021876.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2279638712",
+    "id" : "C3D282D3",
+    "lastKnownWriteTime" : 1572092456,
+    "last_content_update" : 1572092456,
+    "path" : "~/Google Drive/DARTH/Course Modularization/Microsimulation/Microsim 3-state/Microsim_3-state_solution.R",
+    "project_path" : "Microsim_3-state_solution.R",
+    "properties" : {
+        "cursorPosition" : "47,0",
+        "scrollLine" : "34"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

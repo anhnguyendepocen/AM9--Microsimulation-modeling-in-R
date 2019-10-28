@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1571542742369.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2514282715",
+    "id" : "8BB126D5",
+    "lastKnownWriteTime" : 1571542751,
+    "last_content_update" : 1571542751875,
+    "path" : "C:/Users/ppehl/Google Drive/DARTH/Course Modularization/Microsimulation/Microsim 3-state/Function_Microsim_3-state_time.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "12,4",
+        "scrollLine" : "7"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

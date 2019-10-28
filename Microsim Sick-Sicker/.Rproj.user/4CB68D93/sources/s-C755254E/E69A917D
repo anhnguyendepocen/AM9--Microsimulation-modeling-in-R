@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1571538745758.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "E69A917D",
+    "lastKnownWriteTime" : 1571538849,
+    "last_content_update" : 1571538849445,
+    "path" : "C:/Users/ppehl/Google Drive/DARTH/Course Modularization/Microsimulation/Microsim Sick-Sicker/Microsim_Sick-Sicker_time_PSA_solution.R",
+    "project_path" : "Microsim_Sick-Sicker_time_PSA_solution.R",
+    "properties" : {
+        "cursorPosition" : "19,77",
+        "scrollLine" : "15"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
