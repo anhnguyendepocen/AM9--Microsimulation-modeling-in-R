@@ -105,13 +105,12 @@ v_Ts_init <- rep(0, n_i)  # a vector with the time of being sick at the start of
 #### 05.1 Probability function ####
 # The Probs function that updates the transition probabilities of every cycle is shown below.
 
-Probs <- function(M_t, df_X, v_Ts, t) { 
+Probs <- function(M_t, df_X, v_Ts) { 
   # Arguments:
   # M_t: health state occupied at cycle t (character variable)
-  # df_X: data frame with individual data 
+  # df_X: data frame with individual characteristics data  
   ## Sex: sex of the individuals 
   # v_Ts: vector with the duration of being sick
-  # t:     current cycle 
   # Returns: 
   #   transition probabilities for that cycle
   
@@ -159,7 +158,7 @@ Effs <- function (M_t) {
 MicroSim <- function(n_i, df_X, seed = 1) {
   # Arguments:  
   # n_i:     number of individuals
-  # df_X     data frame with individual data 
+  # df_X     data frame with individual characteristics data 
   # seed:    default is 1
   
   set.seed(seed) # set the seed
@@ -182,7 +181,7 @@ MicroSim <- function(n_i, df_X, seed = 1) {
   
   # open a loop for time running cycles 1 to n_t 
   for (t in 1:n_t) {
-    m_P <- Probs(m_M[, t], df_X, v_Ts, t)  # calculate the transition probabilities for the cycle based on health state t
+    m_P <- Probs(m_M[, t], df_X, v_Ts)  # calculate the transition probabilities for the cycle based on health state t
     m_M[, t + 1]  <- samplev(m_P, 1)       # sample the current health state and store that state in matrix m_M 
     m_C[, t + 1]  <- Costs(m_M[, t + 1])   # calculate costs during cycle t + 1
     m_E[, t + 1]  <- Effs (m_M[, t + 1])   # calculate QALYs during cycle t + 1

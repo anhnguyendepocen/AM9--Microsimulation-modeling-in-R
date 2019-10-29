@@ -116,6 +116,10 @@ v_Ts_init <- rep(0, n_i)         # a vector with the time of being sick at the s
 Probs <- function(M_t, df_X, v_Ts, t) { 
   # Arguments:
   # M_t: health state occupied by individual i at cycle t (character variable)
+  # df_X:     data frame with individual characteristics data 
+  ## Age      age of the individuals
+  ## Sex      sex of the indivuduals 
+  ## x        treatment effect modifier  
   # v_Ts: time an individual is sick
   # t:     current cycle 
 # Returns: 
@@ -157,7 +161,7 @@ Costs <- function (M_t, Trt = FALSE) {
 
 Effs <- function (M_t, df_X, Trt = FALSE, cl = 1) {
    # M_t: health state occupied by individual i at cycle t (character variable)
-  # df_Pop: individual characteristics including Age, Sex and the effect modifier of the treatment effect
+  # df_X: data frame with individual characteristics data 
   # Trt:  is the individual treated? (default is FALSE) 
   # cl:   cycle length (default is 1)
   
@@ -177,10 +181,10 @@ Effs <- function (M_t, df_X, Trt = FALSE, cl = 1) {
 MicroSim <- function(n_i, df_X , Trt = FALSE, seed = 1) {
 # Arguments:  
   # n_i:     number of individuals
-  # df_X     data frame with individual data 
-  # Age      age of the individuals
-  # Sex      sex of the individuals 
-  # x        effect modifier  
+  # df_X     data frame with individual characteristics data 
+  ## Age      age of the individuals
+  ## Sex      sex of the individuals 
+  ## x        effect modifier  
   # Trt:     is this the individual receiving treatment? (default is FALSE)
   # seed:    default is 1
   
@@ -325,6 +329,7 @@ df_psa_input <- gen_psa(n_sim = n_sim)
 head(df_psa_input)
 
 ## Histogram of parameters
+# Make sure the Plots window is large enough to plot all the histograms
 ggplot(melt(df_psa_input, variable.name = "Parameter"), aes(x = value)) +
   facet_wrap(~Parameter, scales = "free") +
   geom_histogram(aes(y = ..density..)) +
@@ -390,3 +395,4 @@ plot(out_psa)
 out_evpi <- calc_evpi(v_wtp, out_psa)
 plot(out_evpi) 
 #ggsave("figs/microsim_sick_sicker/microsim_sicksicker_EVPIs.png", width = 8, height = 6)
+

@@ -1,11 +1,9 @@
 
-############  Microsimulation Sick-Sicker model with time dependency  ##########
+############  Microsimulation Sick-Sicker model ##########
 # Includes: 
-# individual characteristics: age
+# individual characteristicss: age
 # age dependent mortality probabilities 
-# time dependency for the sick (S1) state
-# increasing change of death in the first 6 year of sickness (tunnel)
-# Probabilistic Sensitivity Analysis (PSA)
+# individual treatment effect modifyer 
 ################################################################################
 
 
@@ -25,11 +23,9 @@
 # 5 University of Pittsburgh Graduate School of Public Health, Pittsburgh, PA, USA
 # 6 The Hospital for Sick Children, Toronto and University of Toronto, Toronto ON, Canada
 
-
-
 ################################################################################
 # Please cite our publications when using this code:
-# darthworkgroup.com/publications
+# darthworkgroup.com
 # Krijkamp EM, Alarid-Escudero F, Enns EA, Jalal HJ, Hunink MGM, Pechlivanoglou P. 
 # Microsimulation modeling for health decision sciences using R: A tutorial. 
 # Med Decis Making. 2018;38(3):400-422.
@@ -46,39 +42,38 @@
 ################################################################################
 
 #### 01 Load packages ####
+if (!require('devtools')) install.packages('devtools'); library(devtools)
+if (!require('ggplot2')) install.packages('ggplot2'); library(ggplot2)
+if (!require('dampack')) install_github('DARTH-git/dampack'); library(dampack)
 if (!require('dplyr')) install.packages('dplyr'); library(dplyr)
-if (!require('dampack')) install.packages('dampack'); library(dampack)
-if (!require('reshape2')) install.packages('reshape2'); library(reshape2)
-
+if (!require('matlab')) install.packages('matlab'); library(matlab)
 
 #### 02 Load Functions ####
 source("Functions.R")
-
 
 #### 03 Input Model Parameters ####
 set.seed(1)                    # set the seed  
 
 # Model structure 
-n_t   <- 30                       # time horizon, 30 cycles
-n_i   <- 100000                   # number of simulated individuals
-v_n   <- c("H", "S1", "S2", "D")  # the model states names
-n_s   <- length(v_n)              # the number of health states
-d_r   <- 0.03                     # discount rate of 3% per cycle
-v_dwe <- v_dwc <- 1 / ((1 + d_r) ^ (0:n_t))              # discount weight 
-v_names_str <- c("no treatment", "treatment")            # strategy names
-n_str <- length(v_names_str)      # number of strategies
+n_t   <- 30                    # time horizon, 30 cycles
+n_i   <- 100000                # number of simulated individuals
+v_n   <- c("H","S1","S2","D")  # the model states names
+n_s   <- length(v_n)           # the number of health states
+d_r   <- 0.03                  # discount rate of 3% per cycle
+v_dwe <- v_dwc <- 1 / ((1 + d_r) ^ (0:n_t))   # discount weight 
+v_names_str <- c("no treatment", "treatment") # strategy names
 
-### Event probabilities (per cycle)
-# Annual transition probabilities
+# Event probabilities (per cycle)
+## Annual transition probabilities
 p_HS1   <- 0.15                # probability of becoming sick when healthy
 p_S1H   <- 0.5                 # probability of recovering to healthy when sick
 p_S1S2  <- 0.105               # probability of becoming sicker when sick
 
-# Annual probabilities of death
-p_mort   <- read.csv("mortProb_age.csv")                 # load age dependent probability
+## Annual probabilities of death
+p_mort   <- read.csv("mortProb_age.csv")        # load age dependent probability
 dist_Age <- read.csv("MyPopulation-AgeDistribution.csv") # load age distribution
 
-p_S1D    <- c(0.0149, 0.018, 0.021, 0.026, 0.031, rep(0.037, n_t - 5)) # probability to die in S1 by cycle 
+p_S1D    <- 0.0149          # probability to die in S1 by cycle 
 p_S2D    <- 0.048           # probability to die in S2
 
 # Cost inputs
@@ -106,31 +101,31 @@ df_X     <- data.frame(ID = 1:n_i, x = v_x, Age = v_age0)
 # Specify the initial health state of the individuals 
 # everyone begins in the healthy state (in this example)
 v_M_init  <- rep("H", n_i)       # a vector with the initial health state for all individuals 
-v_Ts_init <- rep(0, n_i)         # a vector with the time of being sick at the start of the model 
 
 
 #### 05 Define Simulation Functions ####
 #### 05.1 Probability function ####
 # The Probs function that updates the transition probabilities of every cycle is shown below.
 
-Probs <- function(M_t, df_X, v_Ts, t) { 
+Probs <- function(M_t, df_X, t) { 
   # Arguments:
   # M_t: health state occupied by individual i at cycle t (character variable)
-  # v_Ts: time an individual is sick
+  # df_X: dataframe with individual caracteristics 
   # t:     current cycle 
 # Returns: 
   #   transition probabilities for that cycle
     
-  m_p_t           <- matrix(0, nrow = n_s, ncol = n_i)  # create matrix of state transition probabilities
+  m_p_t        <- matrix(0, nrow = n_s, ncol = n_i)  # create matrix of state transition probabilities
   rownames(m_p_t) <-  v_n                               # give the state names to the rows
   
   # lookup baseline probability and rate of dying based on individual characteristics
-  p_HD_all <- inner_join(df_X, p_mort, by = c("Age"))
+  p_HD_all <- dplyr::inner_join(df_X, p_mort, by = c("Age"))
+
   p_HD     <- p_HD_all[M_t == "H","p_HD"]
   
-  # update the m_p with the appropriate probabilities   
-  m_p_t[, M_t == "H"]  <- rbind(1 - p_HS1 - p_HD, p_HS1, 0, p_HD)                              # transition probabilities when healthy
-  m_p_t[, M_t == "S1"] <- rbind(p_S1H, 1 - p_S1H - p_S1S2 - p_S1D[v_Ts], p_S1S2, p_S1D[v_Ts])  # transition probabilities when sick
+  # update the m_P with the appropriate probabilities   
+  m_p_t[, M_t == "H"]  <- rbind(1 - p_HS1 - p_HD, p_HS1, 0, p_HD)      # transition probabilities when healthy
+  m_p_t[, M_t == "S1"] <- rbind(p_S1H, 1 - p_S1H - p_S1S2 - p_S1D, p_S1S2, p_S1D)  # transition probabilities when sick
   m_p_t[, M_t == "S2"] <- rbind(0, 0, 1 - p_S2D, p_S2D)                                            # transition probabilities when sicker
   m_p_t[, M_t == "D"]  <- rbind(0, 0, 0, 1)                                                        # transition probabilities when dead   
   return(t(m_p_t))
@@ -142,7 +137,8 @@ Probs <- function(M_t, df_X, v_Ts, t) {
 Costs <- function (M_t, Trt = FALSE) {
   # M_t: health state occupied by individual i at cycle t (character variable)
   # Trt:  is the individual being treated? (default is FALSE) 
-  
+# Returns: 
+  #   costs for that cycle
   c_t <- 0                                  # by default the cost for everyone is zero 
   c_t[M_t == "H"]  <- c_H                  # update the cost if healthy
   c_t[M_t == "S1"] <- c_S1 + c_Trt * Trt   # update the cost if sick conditional on treatment
@@ -157,9 +153,11 @@ Costs <- function (M_t, Trt = FALSE) {
 
 Effs <- function (M_t, df_X, Trt = FALSE, cl = 1) {
    # M_t: health state occupied by individual i at cycle t (character variable)
-  # df_Pop: individual characteristics including Age, Sex and the effect modifier of the treatment effect
+   # df_X: dataframe with individual characteristics including Age, Sex and the effect modifier of the treatment effect
   # Trt:  is the individual treated? (default is FALSE) 
   # cl:   cycle length (default is 1)
+  # Returns: 
+  #   effects for that cycle
   
   u_t <- 0                                        # by default the utility for everyone is zero
   u_t[M_t == "H"]  <- u_H                        # update the utility if healthy
@@ -168,19 +166,19 @@ Effs <- function (M_t, df_X, Trt = FALSE, cl = 1) {
   u_t[M_t == "S2"] <- u_S2                       # update the utility if sicker
   u_t[M_t == "D"]  <- u_D                        # update the utility if dead
   
-  QALYs <-  u_t * cl             # calculate the QALYs during cycle t
+  QALYs <-  u_t * cl            # calculate the QALYs during cycle t
   return(QALYs)                  # return the QALYs
 }
 
 
 #### 06 Run Microsimulation ####
-MicroSim <- function(n_i, df_X , Trt = FALSE, seed = 1) {
+MicroSim <- function(n_i, df_X, Trt = FALSE, seed = 1) {
 # Arguments:  
   # n_i:     number of individuals
   # df_X     data frame with individual data 
-  # Age      age of the individuals
-  # Sex      sex of the individuals 
-  # x        effect modifier  
+  ## Age      age of the individuals
+  ## Sex      sex of the indivuduals 
+  ## x        treatment effect modifier  
   # Trt:     is this the individual receiving treatment? (default is FALSE)
   # seed:    default is 1
   
@@ -199,20 +197,18 @@ MicroSim <- function(n_i, df_X , Trt = FALSE, seed = 1) {
                                                      paste("cycle", 0:n_t, sep = " ")))  
 
     m_M [, 1] <- v_M_init    # initial health state at cycle 0 for individual i
-    v_Ts      <- v_Ts_init   # initialize time since illnes onset for individual i
     
     m_C[, 1]  <- Costs(m_M[, 1], Trt)         # calculate costs per individual during cycle 0
     m_E[, 1]  <- Effs (m_M[, 1], df_X, Trt)   # calculate QALYs per individual during cycle 0
     
     # open a loop for time running cycles 1 to n_t 
     for (t in 1:n_t) {
-      m_P <- Probs(m_M[, t], df_X, v_Ts, t)             # calculate the transition probabilities for the cycle based on  health state t
+      m_P <- Probs(m_M[, t], df_X, t)                   # calculate the transition probabilities for the cycle based on  health state t
       m_M[, t + 1]  <- samplev(m_P, 1)                  # sample the current health state and store that state in matrix m_M 
       m_C[, t + 1]  <- Costs(m_M[, t + 1], Trt)         # calculate costs per individual during cycle t + 1
       m_E[, t + 1]  <- Effs(m_M[, t + 1], df_X, Trt)    # calculate QALYs per individual during cycle t + 1
       
-      v_Ts <- if_else(m_M[, t + 1] == "S1", v_Ts + 1, 0) # update time since illness onset for t + 1 
-      df_X$Age[m_M[, t + 1] != "D"]  <- df_X$Age[m_M[, t + 1] != "D"] + 1
+      df_X$Age[m_M[, t + 1] != "D"]  <- df_X$Age[m_M[, t + 1] != "D"] + 1 # update the age of individuals that are alive
     
       # Display simulation progress
       if(t/(n_t/10) == round(t/(n_t/10), 0)) { # display progress every 10%
@@ -235,10 +231,11 @@ MicroSim <- function(n_i, df_X , Trt = FALSE, seed = 1) {
 # By specifying all the arguments in the `MicroSim()` the simulation can be started
 # In this example the outcomes are of the simulation are stored in the variables `outcomes_no_tr` and `outcomes_trt`.
 
-### Run the simulation for both no treatment and treatment options
+# Run the simulation for both no treatment and treatment options
+tic()
 outcomes_no_trt  <- MicroSim(n_i, df_X, Trt = FALSE, seed = 1)
 outcomes_trt     <- MicroSim(n_i, df_X, Trt = TRUE,  seed = 1)
-
+toc()
 
 #### 07 Visualize results ####
 options(scipen = 999)
@@ -248,14 +245,12 @@ plot(density(outcomes_no_trt$tc), main = paste("Total cost per person"), xlab = 
 plot(density(outcomes_no_trt$te), main = paste("Total QALYs per person"), xlab = "QALYs")
 
 plot_m_TR(outcomes_no_trt$m_M)    # health state trace
-# ggsave("figs/microoutcomes_sick_sicker/microoutcomes_sick_sicker_eff_density_trt.png", plot = plot_te(outcomes_trt$te), width = 8, height = 6)
 
 ### Treatment
 plot(density(outcomes_trt$tc), main = paste("Total cost per person"), xlab = "Cost ($)")
 plot(density(outcomes_trt$te), main = paste("Total QALYs per person"), xlab = "QALYs")
 
 plot_m_TR(outcomes_trt$m_M)    # health state trace
-
 
 
 #### 08 Cost Effectiveness Analysis ####
@@ -269,124 +264,3 @@ calculate_icers(cost       = v_C,
                 effect     = v_E,
                 strategies = v_names_str)
 
-
-#### 09 Probabilistic Sensitivity Analysis (PSA) ####
-### Function that generates random sample for PSA
-gen_psa <- function(n_sim = 1000, seed = 071818){
-  set.seed(seed) # set a seed to be able to reproduce the same results
-  
-  df_psa <- data.frame(
-    # Transition probabilities (per cycle)
-    p_HS1   = rbeta(n_sim, 30, 170),                             # probability to become sick when healthy
-    p_S1H   = rbeta(n_sim, 60, 60) ,                             # probability to become healthy when sick
-    p_S1S2  = rbeta(n_sim, 84, 716),                             # probability to become sicker when sick
-    p_S2D   = rbeta(n_sim, 22, 434),                             # probability to die in S2
-    # Cost vectors with length n_sim
-    c_H     = rgamma(n_sim, shape = 100, scale = 20)    ,        # cost of remaining one cycle in state H
-    c_S1    = rgamma(n_sim, shape = 177.8, scale = 22.5),        # cost of remaining one cycle in state S1
-    c_S2    = rgamma(n_sim, shape = 225, scale = 66.7)  ,        # cost of remaining one cycle in state S2
-    c_trt   = rgamma(n_sim, shape = 73.5, scale = 163.3),        # cost of treatment (per cycle)
-    c_D     = 0                                         ,        # cost of being in the death state
-    # Utility vectors with length n_sim 
-    u_H     = rbeta(n_sim, 9, 0.009)                          ,  # utility when healthy
-    u_S1    = rbeta(n_sim ,351, 117)                          ,  # utility when sick
-    u_S2    = rbeta(n_sim, 138, 138)                          ,  # utility when sicker
-    u_D     = 0                                               ,  # utility when dead
-    u_trt   = rbeta(n_sim, 112, 6)                            ,  # utility when being treated
-    lb_eff  = 0.95                                            ,  # lower bound of effect modifier
-    ub_eff  = 1.05                                               # upper bound of effect modifier
-    )
-
-  return(df_psa)
-}
-
-
-# Try it
-gen_psa(10) 
-
-### Decrease number of individuals since PSA takes a lot of time
-n_i <- 1000
-
-### update Sample individual level characteristics 
-
-
-# Dynamic characteristics 
-# Specify the initial health state of the individuals 
-# everyone begins in the healthy state (in this example)
-v_M_init  <- rep("H", n_i)       # a vector with the initial health state for all individuals 
-v_Ts_init <- rep(0, n_i)         # a vector with the time of being sick at the start of the model 
-
-### Number of simulations
-n_sim <- 500
-
-### Generate PSA input dataset
-df_psa_input <- gen_psa(n_sim = n_sim)
-## First six observations
-head(df_psa_input)
-
-## Histogram of parameters
-ggplot(melt(df_psa_input, variable.name = "Parameter"), aes(x = value)) +
-  facet_wrap(~Parameter, scales = "free") +
-  geom_histogram(aes(y = ..density..)) +
-  theme_bw(base_size = 16)
-# ggsave("figs/microsim_sick_sicker/microsim_sicksicker_PSA_parameters.png", width = 10, height = 6)
-
-### Initialize dataframes with PSA output 
-# Dataframe of costs
-df_c <- as.data.frame(matrix(0, 
-                            nrow = n_sim,
-                            ncol = n_str))
-colnames(df_c) <- v_names_str
-# Dataframe of effectiveness
-df_e <- as.data.frame(matrix(0, 
-                            nrow = n_sim,
-                            ncol = n_str))
-colnames(df_e) <- v_names_str
-
-#### 09.1 Load function of microsimulation model ####
-source("Function_Microsim_Sick-Sicker_time.R")
-
-# Test microsimulation function
-calculate_ce_out(df_psa_input[1,])
-
-#### 09.2 Run microsimulation model on each parameter set of PSA input dataset
-for(i in 1:n_sim){
-  df_out_temp <- calculate_ce_out(df_psa_input[i, ])
-  df_c[i, ] <- df_out_temp$Cost
-  df_e[i, ] <- df_out_temp$Effect
-  # Display simulation progress
-  if(i/(n_sim/10) == round(i/(n_sim/10),0)) { # display progress every 10%
-    cat('\r', paste('            ', 'Overall progress: ', i/n_sim * 100, "% done", sep = " "))
-  }
-}
-
-### Vector with willingness-to-pay (WTP) thresholds
-v_wtp <- seq(0, 300000, by = 10000)
-
-#### 09.3 Cost Effectiveness Analysis ####
-# make an PSA object using dampack
-out_psa  <- make_psa_obj(df_c, df_e, df_psa_input, v_names_str, "$")
-
-#### 09.3.1 ICER ####
-# use dampack to calculate the ICER
-# store the mean costs of each strategy in a new variable C (vector of costs)
-v_C <- c(mean(out_psa$cost$no.treatment), mean(out_psa$cost$treatment))
-# store the mean QALYs of each strategy in a new variable E (vector of effects)
-v_E <- c(mean(out_psa$effectiveness$no.treatment), mean(out_psa$effectiveness$treatment))
-calculate_icers(cost       = v_C,
-                effect     = v_E,
-                strategies = v_names_str)
-
-#### 09.3.2 Cost-Effectiveness Acceptability Curves (CEAC) and Frontier (CEAF) ####
-out_ceaf <- ceac(v_wtp, out_psa)
-plot(out_ceaf)
-#ggsave("figs/microsim_sick_sicker/microsim_sicksicker_PSA_CEAC_CEAF.png", width = 8, height = 6)
-
-#### 09.3.3 Cost-Effectiveness Scatter plot ####
-plot(out_psa)
-#ggsave("figs/microsim_sick_sicker/microsim_sicksicker_PSA_scatter.png", width = 8, height = 6)
-
-#### 09.3.4 Expected Value of Perfect Information (EVPI) ####
-out_evpi <- calc_evpi(v_wtp, out_psa)
-plot(out_evpi) 
-#ggsave("figs/microsim_sick_sicker/microsim_sicksicker_EVPIs.png", width = 8, height = 6)

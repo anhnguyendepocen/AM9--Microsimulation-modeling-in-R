@@ -110,13 +110,12 @@ v_M_init  <- rep("H", n_i)       # a vector with the initial health state for al
 Probs <- function(M_t, df_X, t) { 
   # Arguments:
   # M_t: health state occupied by individual i at cycle t (character variable)
-  # df_X: dataframe with individual caracteristics 
+  # df_X: data frame with individual characteristics data 
   # t:     current cycle 
 # Returns: 
   #   transition probabilities for that cycle
     
-  m_p_t        
-  <- matrix(0, nrow = n_s, ncol = n_i)  # create matrix of state transition probabilities
+  m_p_t        <- matrix(0, nrow = n_s, ncol = n_i)  # create matrix of state transition probabilities
   rownames(m_p_t) <-  v_n                               # give the state names to the rows
   
   # lookup baseline probability and rate of dying based on individual characteristics
@@ -127,8 +126,8 @@ Probs <- function(M_t, df_X, t) {
   # update the m_P with the appropriate probabilities   
   m_p_t[, M_t == "H"]  <- rbind(1 - p_HS1 - p_HD, p_HS1, 0, p_HD)      # transition probabilities when healthy
   m_p_t[, M_t == "S1"] <- rbind(p_S1H, 1 - p_S1H - p_S1S2 - p_S1D, p_S1S2, p_S1D)  # transition probabilities when sick
-  m_p_t[, M_t == "S2"] <- c(0, 0, 1 - p_S2D, p_S2D)                                            # transition probabilities when sicker
-  m_p_t[, M_t == "D"]  <- c(0, 0, 0, 1)                                                        # transition probabilities when dead   
+  m_p_t[, M_t == "S2"] <- rbind(0, 0, 1 - p_S2D, p_S2D)                                            # transition probabilities when sicker
+  m_p_t[, M_t == "D"]  <- rbind(0, 0, 0, 1)                                                        # transition probabilities when dead   
   return(t(m_p_t))
   }       
 
@@ -154,7 +153,10 @@ Costs <- function (M_t, Trt = FALSE) {
 
 Effs <- function (M_t, df_X, Trt = FALSE, cl = 1) {
    # M_t: health state occupied by individual i at cycle t (character variable)
-   # df_X: dataframe with individual characteristics including Age, Sex and the effect modifier of the treatment effect
+  # df_X     data frame with individual characteristics data 
+  ## Age      age of the individuals
+  ## Sex      sex of the indivuduals 
+  ## x        treatment effect modifier  
   # Trt:  is the individual treated? (default is FALSE) 
   # cl:   cycle length (default is 1)
   # Returns: 
@@ -176,7 +178,7 @@ Effs <- function (M_t, df_X, Trt = FALSE, cl = 1) {
 MicroSim <- function(n_i, df_X, Trt = FALSE, seed = 1) {
 # Arguments:  
   # n_i:     number of individuals
-  # df_X     data frame with individual data 
+  # df_X     data frame with individual characteristics data 
   ## Age      age of the individuals
   ## Sex      sex of the indivuduals 
   ## x        treatment effect modifier  
